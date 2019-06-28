@@ -4,8 +4,8 @@ from pyparrot.Bebop import Bebop
 class Keybop(object):
     def __init__(self, bebop:Bebop=None):
         print('WARNING: Key listening is global; while piloting the drone, you can NOT use your keyboard for anything else!')
-        print('Control Bebop:\nTakeoff: Ctrl+T\nLand: Space\nFwd/Back/Left/Right: i\k\j\l\nUp/Dwn/Clockwise/CClockwise:'+
-              'w/s/d/a\nLand and stop controls: Esc')
+        print('- Control Bebop -\nTakeoff: Ctrl+T\nLand: Space\nFwd/Back/Left/Right: i/k/j/l\nUp/Dwn/Clockwise/CClockwise: '+
+              'w/s/d/a\nPan/tilt camera: up/down/left/right\nLand and stop controls: Esc\nDO NOT PRESS AND HOLD BUTTONS!')
         self.interrupted = False
         self.bebop = bebop
 

@@ -7,6 +7,7 @@ Author: Amy McGovern
 from pyparrot.Bebop import Bebop
 from pyparrot.DroneVisionGUI import DroneVisionGUI
 import cv2
+import threading
 from src.bebop_teleop import Keybop
 isAlive = False
 
@@ -18,20 +19,26 @@ class UserVision:
     def save_pictures(self, args):
         #print("saving picture")
         img = self.vision.get_latest_valid_picture()
+        #print(img)
         # cv2.imwrite("test"+datetime.now().strftime("%H%M%S")+".png",img)
 
 
-def demo_user_code_after_vision_opened(bebopVision, args):
+def demo_user_code_after_vision_opened(bebopVision:DroneVisionGUI, args):
     bebop = args[0]
-
-    print("Vision successfully started!")
+    print("Vision successfully started! Sleeping for a sec.")
     bebop.smart_sleep(1)
 
     if bebopVision.vision_running:
+        print("Starting key listeners!")
+        threading.Thread(target=Keybop(bebop).start).start()
 
-        Keybop(bebop).start()
+        cv2.namedWindow("cv_img")
+        while cv2.getWindowProperty('cv_img', 0) >= 0:
+            img = bebopVision.get_latest_valid_picture()
+            cv2.imshow("cv_img", img)
+            cv2.waitKey(1)
 
-        print("Finishing demo and stopping vision")
+        print("Stopping!")
         bebopVision.close_video()
 
     # disconnect nicely so we don't need a reboot
