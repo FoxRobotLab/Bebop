@@ -28,7 +28,6 @@ def demo_user_code_after_vision_opened(bebopVision, args):
     bebop.smart_sleep(1)
 
     if bebopVision.vision_running:
-        print("Moving the camera using velocity")
 
         Keybop(bebop).start()
 
