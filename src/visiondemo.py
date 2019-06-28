@@ -30,12 +30,14 @@ def demo_user_code_after_vision_opened(bebopVision:DroneVisionGUI, args):
 
     if bebopVision.vision_running:
         print("Starting key listeners!")
-        threading.Thread(target=Keybop(bebop).start).start()
+        keyListener = threading.Thread(target=Keybop(bebop).start)
+        keyListener.setDaemon(True)
+        keyListener.start()
 
         cv2.namedWindow("cv_img")
         while cv2.getWindowProperty('cv_img', 0) >= 0:
             img = bebopVision.get_latest_valid_picture()
-            cv2.imshow("cv_img", img)
+            cv2.imshow("cv_img", cv2.cvtColor(img,cv2.COLOR_BGR2HSV))
             cv2.waitKey(1)
 
         print("Stopping!")
