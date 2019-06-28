@@ -12,7 +12,7 @@ import time
 from PyQt5.QtGui import QImage
 from datetime import datetime
 import sys
-
+from src.bebop_teleop import Keybop
 isAlive = False
 
 class UserVision:
@@ -57,7 +57,7 @@ def demo_user_code_after_vision_opened(bebopVision, args):
     #bebopVision.start_video_buffering()
 
     # takeoff
-    bebop.safe_takeoff(5)
+    # bebop.safe_takeoff(5)
 
     # skipping actually flying for safety purposes indoors - if you want
     # different pictures, move the bebop around by hand
@@ -67,12 +67,13 @@ def demo_user_code_after_vision_opened(bebopVision, args):
     if bebopVision.vision_running:
         print("Moving the camera using velocity")
 
-        bebop.pan_tilt_camera_velocity(pan_velocity=0, tilt_velocity=-2, duration=2)
-        bebop.smart_sleep(30)
-        bebop.fly_direct(pitch=0,roll=0,yaw=0,vertical_movement=0,duration=12)
-        bebop.fly_direct(pitch=0, roll=0, yaw=100, vertical_movement=0, duration=12)
+        Keybop(bebop).start()
+        # bebop.pan_tilt_camera_velocity(pan_velocity=0, tilt_velocity=-2, duration=2)
+        # bebop.smart_sleep(30)
+        # bebop.fly_direct(pitch=0,roll=0,yaw=0,vertical_movement=0,duration=12)
+        # bebop.fly_direct(pitch=0, roll=0, yaw=100, vertical_movement=0, duration=12)
         # land
-        bebop.safe_land(5)
+        # bebop.safe_land(5)
 
         print("Finishing demo and stopping vision")
         bebopVision.close_video()
@@ -80,6 +81,7 @@ def demo_user_code_after_vision_opened(bebopVision, args):
     # disconnect nicely so we don't need a reboot
     print("disconnecting")
     bebop.disconnect()
+
 
 if __name__ == "__main__":
     # make my bebop object
