@@ -9,6 +9,7 @@ from pyparrot.DroneVisionGUI import DroneVisionGUI
 import cv2
 import threading
 from src.bebop_teleop import Keybop
+from src.object_tracking import *
 isAlive = False
 
 class UserVision:
@@ -23,22 +24,25 @@ class UserVision:
         # cv2.imwrite("test"+datetime.now().strftime("%H%M%S")+".png",img)
 
 
-def demo_user_code_after_vision_opened(bebopVision:DroneVisionGUI, args):
+def user_code(bebopVision:DroneVisionGUI, args):
     bebop = args[0]
     print("Vision successfully started! Sleeping for a sec.")
     bebop.smart_sleep(1)
 
     if bebopVision.vision_running:
+
+        # Key listener thread init
         print("Starting key listeners!")
-        key_listener = threading.Thread(target=Keybop(bebop).start)
-        key_listener.setDaemon(True)
+        k = Keybop(bebop)
+        key_listener = threading.Thread(target=k.start,daemon=True)
         key_listener.start()
 
-        cv2.namedWindow("cv_img")
-        while cv2.getWindowProperty('cv_img', 0) >= 0:
-            img = bebopVision.get_latest_valid_picture()
-            cv2.imshow("cv_img", cv2.cvtColor(img,cv2.COLOR_BGR2HSV))
-            cv2.waitKey(1)
+        # Vision thread init. All cv related code should go in the vision thread. It may also be able to go in this
+        # thread, but that seems less reliable.
+
+        vision = threading.Thread(target=qr_tracking, args=(bebopVision, bebop), daemon=True)
+        vision.start()
+        vision.join()
 
         print("Stopping!")
         bebopVision.close_video()
@@ -57,7 +61,7 @@ if __name__ == "__main__":
 
     if success:
         # start up the video
-        bebopVision = DroneVisionGUI(bebop, is_bebop=True, user_code_to_run=demo_user_code_after_vision_opened,
+        bebopVision = DroneVisionGUI(bebop, is_bebop=True, user_code_to_run=user_code,
                                      user_args=(bebop, ))
 
         userVision = UserVision(bebopVision)

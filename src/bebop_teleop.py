@@ -10,6 +10,7 @@ class Keybop(object):
         self.bebop = bebop
 
     def start(self):
+        print("Starting teleop key listener!")
         keyboard.on_press_key('w', self.fly_up)
         keyboard.on_press_key('s', self.fly_down)
         keyboard.on_press_key('a', self.yaw_ccw)
@@ -27,10 +28,12 @@ class Keybop(object):
         keyboard.on_press_key('esc', self.interrupt)
         keyboard.on_press_key(' ',self.land)
         keyboard.add_hotkey('ctrl+t',self.takeoff)
+        print(self.interrupted)
         while not self.interrupted:
             pass
 
     def fly_up(self,e):
+        print("up")
         self.bebop.fly_direct(roll=0,pitch=0,yaw=0,vertical_movement=20,duration=0.00001)
 
     def fly_down(self,e):
@@ -65,6 +68,7 @@ class Keybop(object):
 
     def takeoff(self):
         self.bebop.safe_takeoff(5)
+        self.bebop.fly_direct(pitch=0,roll=0,yaw=0,vertical_movement=20,duration=1)
     def land(self,e):
         self.bebop.safe_land(10)
 
