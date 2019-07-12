@@ -30,6 +30,8 @@ class Keybop(object):
         keyboard.add_hotkey('ctrl+t',self.takeoff)
         print(self.interrupted)
         while not self.interrupted:
+            if self.bebop.sensors.battery < 25:
+                print("25% battery remaining!")
             pass
 
     def fly_up(self,e):

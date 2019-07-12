@@ -8,19 +8,21 @@ from pyparrot.Bebop import Bebop
 import pyzbar.pyzbar as zbar
 
 
-def show_hist(hist):
-    """Takes in the histogram, and displays it in the hist window."""
-    bin_count = hist.shape[0]
-    bin_w = 24
-    img = np.zeros((256, bin_count * bin_w, 3), np.uint8)
-    for i in range(bin_count):
-        h = int(hist[i])
-        cv2.rectangle(img, (i * bin_w + 2, 255), ((i + 1) * bin_w - 2, 255 - h), (int(180.0 * i / bin_count), 255, 255),
-                      -1)
-    img = cv2.cvtColor(img, cv2.COLOR_HSV2BGR)
-    cv2.imshow('hist', img)
-
 def color_tracking(drone_vision:DroneVisionGUI, bebop:Bebop):
+
+    def show_hist(hist):
+        """Takes in the histogram, and displays it in the hist window."""
+        bin_count = hist.shape[0]
+        bin_w = 24
+        img = np.zeros((256, bin_count * bin_w, 3), np.uint8)
+        for i in range(bin_count):
+            h = int(hist[i])
+            cv2.rectangle(img, (i * bin_w + 2, 255), ((i + 1) * bin_w - 2, 255 - h),
+                          (int(180.0 * i / bin_count), 255, 255),
+                          -1)
+        img = cv2.cvtColor(img, cv2.COLOR_HSV2BGR)
+        cv2.imshow('hist', img)
+
     showBackProj = False
     showHistMask = False
 
@@ -57,7 +59,7 @@ def color_tracking(drone_vision:DroneVisionGUI, bebop:Bebop):
         hist = cv2.calcHist([histImage], [0], maskedHistIm, [16], [0, 180])
         cv2.normalize(hist, hist, 0, 255, cv2.NORM_MINMAX)
         hist = hist.reshape(-1)
-        #show_hist(hist)
+        show_hist(hist)
 
         # start processing frames
         while cv2.getWindowProperty('camshift', 0) >= 0:
