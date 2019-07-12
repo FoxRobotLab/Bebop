@@ -5,9 +5,7 @@ import numpy as np
 import cv2
 from pyparrot.DroneVisionGUI import DroneVisionGUI
 from pyparrot.Bebop import Bebop
-import time
 import pyzbar.pyzbar as zbar
-
 
 
 def show_hist(hist):
@@ -21,7 +19,6 @@ def show_hist(hist):
                       -1)
     img = cv2.cvtColor(img, cv2.COLOR_HSV2BGR)
     cv2.imshow('hist', img)
-
 
 def color_tracking(drone_vision:DroneVisionGUI, bebop:Bebop):
     showBackProj = False
@@ -114,12 +111,10 @@ def color_tracking(drone_vision:DroneVisionGUI, bebop:Bebop):
 
 def face_tracking(droneVision:DroneVisionGUI,bebop:Bebop):
     face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-    body_cascade = cv2.CascadeClassifier('haarcascade_fullbody.xml')
 
     cv2.namedWindow("face_tracking")
 
     frame = droneVision.get_latest_valid_picture()
-    # bebop.fly_direct(roll=0,pitch=0,yaw=0,vertical_movement=20,duration=0.1)
 
     while cv2.getWindowProperty('face_tracking', 0) >= 0:
         frame = droneVision.get_latest_valid_picture()
@@ -159,34 +154,43 @@ def qr_tracking(droneVision:DroneVisionGUI, bebop:Bebop):
 
     while cv2.getWindowProperty('qr', 0) >= 0:
         img = droneVision.get_latest_valid_picture()
-        print(img.shape)
         x,y,w,h = None,None,None,None
         try:
-            rect = zbar.decode(img)[0][2]
+            rect = zbar.decode(img, symbols=[zbar.ZBarSymbol.QRCODE])[0][2]
+            poly = zbar.decode(img, symbols=[zbar.ZBarSymbol.QRCODE])[0][3]
             x,y,w,h = rect
-            print(w*h)
+            p1,p2,p3,p4 = poly
         except IndexError:
             pass
 
         if x is not None:
-            cv2.rectangle(img,(x,y),(x+w,y+h),(0,0,255))
+            # cv2.rectangle(img,(x,y),(x+w,y+h),(0,0,255))
 
-        backup_threshold = 5000
-        fwd_threshold = 3600
+            pts = np.array([[p1[0],p1[1]], [p2[0],p2[1]], [p3[0],p3[1]], [p4[0],p4[1]]], np.int32)
+            pts.reshape(-1,1,2)
+            cv2.polylines(img, [pts], True, (255, 0, 255), 5)
 
-        if w is not None and w * h > backup_threshold:
+            area_t1 = abs((p1[0]*(p2[1]-p4[1])+p2[0]*(p4[1]-p1[1])+p4[0]*(p1[1]-p2[1]))/2.0)
+            area_t2 = abs((p3[0] * (p2[1] - p4[1]) + p2[0] * (p4[1] - p3[1]) + p4[0] * (p3[1] - p2[1])) / 2.0)
+            area = area_t2+area_t1
+        backup_threshold = 20000
+        fwd_threshold = 10000
+
+
+
+        if w is not None and area > backup_threshold:
             print("GOING BACK")
             bebop.fly_direct(roll=0, pitch=-20, yaw=0, vertical_movement=0, duration=0.07)
-        elif w is not None and w * h < fwd_threshold:
+        elif w is not None and area < fwd_threshold:
             print("GOING FORWARD")
             bebop.fly_direct(roll=0, pitch=20, yaw=0, vertical_movement=0, duration=0.07)
 
-        if x is not None and x + (w / 2.0) > 650:
+        if x is not None and x + (w / 2.0) > 550:
             print("GOING RIGHT")
-            bebop.fly_direct(roll=0, pitch=0, yaw=70, vertical_movement=0, duration=0.1)
-        elif x is not None and x + (w / 2.0) < 200:
+            bebop.fly_direct(roll=0, pitch=0, yaw=100, vertical_movement=0, duration=0.1)
+        elif x is not None and x + (w / 2.0) < 300:
             print("GOING LEFT")
-            bebop.fly_direct(roll=0, pitch=0, yaw=-70, vertical_movement=0, duration=0.1)
+            bebop.fly_direct(roll=0, pitch=0, yaw=-100, vertical_movement=0, duration=0.1)
 
         if x is not None and y + (h / 2.0) > 380:
             print("GOING DOWN")

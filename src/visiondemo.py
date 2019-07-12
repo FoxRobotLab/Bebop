@@ -32,7 +32,6 @@ def user_code(bebopVision:DroneVisionGUI, args):
     if bebopVision.vision_running:
 
         # Key listener thread init
-        print("Starting key listeners!")
         k = Keybop(bebop)
         key_listener = threading.Thread(target=k.start,daemon=True)
         key_listener.start()
@@ -45,7 +44,7 @@ def user_code(bebopVision:DroneVisionGUI, args):
         vision.join()
 
         print("Stopping!")
-        bebopVision.close_video()
+        bebopVision.close_exit()
 
     # disconnect nicely so we don't need a reboot
     print("disconnecting")
